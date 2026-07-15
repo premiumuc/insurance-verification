@@ -4,9 +4,15 @@
 > platform that becomes the connective tissue between every dimension of a person's
 > health — wearables, medications, symptoms, providers, nutrition, and more.
 
-**Status:** Milestone **M0 complete** — the plan is approved and the Generation-1
-scaffold is in place (Turborepo monorepo, tested safety-gate engine, Fastify API,
-Expo app skeleton, infra + CI). Next up: **M1 — Identity, onboarding, consent**. See
+**Status:** Milestones **M0 + M1 complete**.
+- **M0** — Generation-1 scaffold (Turborepo, tested safety-gate engine, Fastify API,
+  Expo app skeleton, infra + CI).
+- **M1** — Identity, onboarding, consent: Cognito auth (with a dev shim so it runs
+  without AWS) behind an interface, repository layer + audit logging, authZ middleware,
+  the `/auth` · `/me` · `/consents` API, and the full mobile onboarding flow
+  (sign-in/up → profile → consent) behind a biometric app-lock.
+
+Next up: **M2 — Tracking core + dashboard**. See
 [`docs/09-roadmap-and-plan.md`](./docs/09-roadmap-and-plan.md) for the full sequence.
 
 ### Quick start

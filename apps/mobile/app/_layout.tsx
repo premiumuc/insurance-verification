@@ -1,23 +1,31 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { LockGate } from '@/components/lock-gate';
+import { AppLockProvider } from '@/providers/app-lock';
+import { AuthProvider } from '@/providers/auth';
 import { AppQueryProvider } from '@/providers/query';
 import { ThemeProvider } from '@/providers/theme';
 
 /**
- * Root layout: wraps the whole app in theme + server-state providers.
- * The biometric app-lock gate and auth routing are added in M1.
+ * Root layout: providers + the biometric lock gate wrap the whole navigator.
+ * Auth-driven routing is handled by each route reading `useAuth()` (see app/index.tsx).
  */
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <AppQueryProvider>
         <ThemeProvider>
-          <StatusBar style="auto" />
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" />
-            <Stack.Screen name="emergency" options={{ presentation: 'fullScreenModal' }} />
-          </Stack>
+          <AuthProvider>
+            <AppLockProvider>
+              <StatusBar style="auto" />
+              <LockGate>
+                <Stack screenOptions={{ headerShown: false }}>
+                  <Stack.Screen name="emergency" options={{ presentation: 'fullScreenModal' }} />
+                </Stack>
+              </LockGate>
+            </AppLockProvider>
+          </AuthProvider>
         </ThemeProvider>
       </AppQueryProvider>
     </SafeAreaProvider>

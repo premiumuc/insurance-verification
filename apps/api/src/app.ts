@@ -2,23 +2,37 @@ import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
 import Fastify, { type FastifyInstance } from 'fastify';
+import { ZodError } from 'zod';
 import type { ApiError } from '@healthy-companion/types';
+import { authPlugin } from './auth/plugin.js';
 import type { AppConfig } from './config.js';
+import { buildContext, type BuildContextOptions } from './context.js';
 import { AppError } from './errors.js';
 import { createLoggerOptions } from './logger.js';
+import { registerAuthRoutes } from './routes/auth.js';
+import { registerConsentRoutes } from './routes/consents.js';
 import { registerHealthRoutes } from './routes/health.js';
+import { registerMeRoutes } from './routes/me.js';
 import { registerSafetyRoutes } from './routes/safety.js';
 
 /**
  * Build the Fastify app. Separated from server startup so tests can build an app
- * instance and call `.inject()` without opening a socket.
+ * instance and call `.inject()` without opening a socket. `opts` lets tests inject
+ * seeded repositories.
  */
-export async function buildApp(config: AppConfig): Promise<FastifyInstance> {
+export async function buildApp(
+  config: AppConfig,
+  opts: BuildContextOptions = {},
+): Promise<FastifyInstance> {
   const app = Fastify({
     logger: createLoggerOptions(config.LOG_LEVEL),
     genReqId: () => crypto.randomUUID(),
     trustProxy: true,
   });
+
+  // Composition root + auth.
+  app.decorate('ctx', buildContext(config, opts));
+  await app.register(authPlugin);
 
   // Security headers.
   await app.register(helmet, { global: true });
@@ -40,7 +54,18 @@ export async function buildApp(config: AppConfig): Promise<FastifyInstance> {
       };
       return reply.status(err.statusCode).send(body);
     }
-    // Fastify validation errors → 422 without leaking internals.
+    // Zod parse errors (thrown by .parse() in handlers) → 422 with field details.
+    if (err instanceof ZodError) {
+      const body: ApiError = {
+        error: {
+          code: 'validation',
+          message: 'Validation failed',
+          details: err.flatten().fieldErrors,
+        },
+      };
+      return reply.status(422).send(body);
+    }
+    // Fastify schema validation errors → 422 without leaking internals.
     if ((err as { validation?: unknown }).validation) {
       const body: ApiError = {
         error: { code: 'validation', message: 'Validation failed' },
@@ -61,6 +86,9 @@ export async function buildApp(config: AppConfig): Promise<FastifyInstance> {
   // Routes (v1).
   await app.register(registerHealthRoutes, { prefix: '/v1' });
   await app.register(registerSafetyRoutes, { prefix: '/v1' });
+  await app.register(registerAuthRoutes, { prefix: '/v1' });
+  await app.register(registerMeRoutes, { prefix: '/v1' });
+  await app.register(registerConsentRoutes, { prefix: '/v1' });
 
   return app;
 }

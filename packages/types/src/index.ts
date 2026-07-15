@@ -5,3 +5,6 @@
 export * from './common.js';
 export * from './health-event.js';
 export * from './chat.js';
+export * from './profile.js';
+export * from './consent.js';
+export * from './auth.js';
