@@ -12,6 +12,11 @@
 
 ## 9.2 Generation 1 build sequence (milestones)
 
+> **Build status: M0–M8 complete.** All milestones below are implemented, runnable, and
+> green (typecheck · lint · ~80 tests). What remains before store submission is
+> operational (real AWS/BAA provisioning, EAS builds, review) — see
+> [`../store/LAUNCH.md`](../store/LAUNCH.md).
+
 Each milestone is shippable/verifiable on its own. HIPAA controls (encryption, audit,
 authZ, safety gate) are built **into** every milestone, not bolted on at the end.
 
