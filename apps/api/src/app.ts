@@ -14,6 +14,7 @@ import { registerConsentRoutes } from './routes/consents.js';
 import { registerHealthRoutes } from './routes/health.js';
 import { registerMeRoutes } from './routes/me.js';
 import { registerSafetyRoutes } from './routes/safety.js';
+import { registerTrackingRoutes } from './routes/tracking.js';
 
 /**
  * Build the Fastify app. Separated from server startup so tests can build an app
@@ -89,6 +90,7 @@ export async function buildApp(
   await app.register(registerAuthRoutes, { prefix: '/v1' });
   await app.register(registerMeRoutes, { prefix: '/v1' });
   await app.register(registerConsentRoutes, { prefix: '/v1' });
+  await app.register(registerTrackingRoutes, { prefix: '/v1' });
 
   return app;
 }

@@ -42,6 +42,17 @@ export interface ConsentRecord {
   revokedAt: string | null;
 }
 
+export interface EventRecord {
+  id: string;
+  userId: string;
+  type: string;
+  source: 'chat' | 'manual' | 'device' | 'import';
+  occurredAt: string;
+  data: Record<string, unknown>;
+  confidence: number | null;
+  createdAt: string;
+}
+
 export type AuditAction = 'read' | 'create' | 'update' | 'delete' | 'export' | 'share';
 
 export interface AuditRecord {

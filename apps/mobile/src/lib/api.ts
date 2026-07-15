@@ -1,8 +1,13 @@
 import Constants from 'expo-constants';
 import type {
   Consent,
+  CreateHealthEvent,
+  DailySummary,
   GrantConsent,
+  HealthEvent,
+  HealthEventType,
   MeResponse,
+  PatternsResponse,
   Profile,
   RegisterRequest,
   SessionResponse,
@@ -86,4 +91,23 @@ export const api = {
 
   grantConsent: (input: GrantConsent) =>
     request<Consent>('/consents', { method: 'POST', body: input }),
+
+  // --- Tracking (M2) ---
+  createEvent: (input: CreateHealthEvent) =>
+    request<HealthEvent>('/events', { method: 'POST', body: input }),
+
+  listEvents: (params: { type?: HealthEventType; limit?: number } = {}) => {
+    const q = new URLSearchParams();
+    if (params.type) q.set('type', params.type);
+    if (params.limit) q.set('limit', String(params.limit));
+    const qs = q.toString();
+    return request<{ items: HealthEvent[]; nextCursor: string | null }>(
+      `/events${qs ? `?${qs}` : ''}`,
+    );
+  },
+
+  dailySummary: (date?: string) =>
+    request<DailySummary>(`/summary/daily${date ? `?date=${date}` : ''}`),
+
+  patterns: (windowDays = 14) => request<PatternsResponse>(`/patterns?window=${windowDays}`),
 };

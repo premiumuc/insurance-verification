@@ -8,3 +8,4 @@ export * from './chat.js';
 export * from './profile.js';
 export * from './consent.js';
 export * from './auth.js';
+export * from './tracking.js';

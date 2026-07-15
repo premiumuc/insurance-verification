@@ -1,6 +1,7 @@
 import type {
   AuditRecord,
   ConsentRecord,
+  EventRecord,
   ProfileRecord,
   UserRecord,
 } from './models.js';
@@ -31,6 +32,26 @@ export interface ConsentRepository {
   revoke(userId: string, scope: string, at: string): Promise<void>;
 }
 
+export interface EventQuery {
+  userId: string;
+  type?: string;
+  from?: string;
+  to?: string;
+  limit: number;
+  cursor?: string;
+}
+
+export interface EventRepository {
+  create(record: EventRecord): Promise<EventRecord>;
+  findById(id: string): Promise<EventRecord | null>;
+  update(id: string, patch: Partial<Pick<EventRecord, 'data' | 'occurredAt'>>): Promise<EventRecord>;
+  delete(id: string): Promise<void>;
+  /** Returns events newest-first with an opaque nextCursor. */
+  query(q: EventQuery): Promise<{ items: EventRecord[]; nextCursor: string | null }>;
+  /** All of a user's events within [from, to) — used by summary/patterns. */
+  listInRange(userId: string, from: string, to: string): Promise<EventRecord[]>;
+}
+
 export interface AuditRepository {
   append(record: AuditRecord): Promise<void>;
   listBySubject(subjectUserId: string): Promise<AuditRecord[]>;
@@ -40,5 +61,6 @@ export interface Repositories {
   users: UserRepository;
   profiles: ProfileRepository;
   consents: ConsentRepository;
+  events: EventRepository;
   audit: AuditRepository;
 }

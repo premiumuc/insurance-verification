@@ -7,6 +7,7 @@ import type { Repositories } from './db/repositories.js';
 import { AuditService } from './services/audit.js';
 import { ConsentService } from './services/consent.js';
 import { IdentityService } from './services/identity.js';
+import { TrackingService } from './services/tracking.js';
 
 /**
  * Application context: the composition root. Everything a route needs is assembled here
@@ -21,6 +22,7 @@ export interface AppContext {
   issuer: TokenIssuer | null;
   identity: IdentityService;
   consent: ConsentService;
+  tracking: TrackingService;
   audit: AuditService;
 }
 
@@ -54,6 +56,7 @@ export function buildContext(config: AppConfig, opts: BuildContextOptions = {}):
     issuer,
     identity: new IdentityService(repos),
     consent: new ConsentService(repos),
+    tracking: new TrackingService(repos.events),
     audit: new AuditService(repos.audit),
   };
 }
