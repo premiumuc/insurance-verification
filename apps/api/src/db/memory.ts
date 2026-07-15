@@ -6,6 +6,7 @@ import type {
   ConversationRecord,
   DeviceConnectionRecord,
   EventRecord,
+  GoalRecord,
   MedicationRecord,
   MessageRecord,
   MetricSampleRecord,
@@ -22,6 +23,7 @@ import type {
   DeviceRepository,
   EventQuery,
   EventRepository,
+  GoalRepository,
   MedicationRepository,
   MetricRepository,
   ProfileRepository,
@@ -300,6 +302,29 @@ class MemoryAssessmentRepository implements AssessmentRepository {
   }
 }
 
+class MemoryGoalRepository implements GoalRepository {
+  private readonly byId = new Map<string, GoalRecord>();
+  async create(record: GoalRecord): Promise<GoalRecord> {
+    this.byId.set(record.id, record);
+    return record;
+  }
+  async findById(id: string): Promise<GoalRecord | null> {
+    return this.byId.get(id) ?? null;
+  }
+  async listByUser(userId: string): Promise<GoalRecord[]> {
+    return [...this.byId.values()]
+      .filter((g) => g.userId === userId)
+      .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+  }
+  async update(id: string, patch: Partial<GoalRecord>): Promise<GoalRecord> {
+    const existing = this.byId.get(id);
+    if (!existing) throw new Error('goal not found');
+    const next = { ...existing, ...patch };
+    this.byId.set(id, next);
+    return next;
+  }
+}
+
 class MemoryAuditRepository implements AuditRepository {
   private readonly records: AuditRecord[] = [];
   async append(record: AuditRecord): Promise<void> {
@@ -323,6 +348,7 @@ export function createMemoryRepositories(): Repositories {
     devices: new MemoryDeviceRepository(),
     metrics: new MemoryMetricRepository(),
     assessments: new MemoryAssessmentRepository(),
+    goals: new MemoryGoalRepository(),
     audit: new MemoryAuditRepository(),
   };
 }

@@ -16,6 +16,7 @@ import { CareService } from './services/care.js';
 import { ConsentService } from './services/consent.js';
 import { ConversationService } from './services/conversation.js';
 import { DeviceService } from './services/devices.js';
+import { GoalService } from './services/goals.js';
 import { IdentityService } from './services/identity.js';
 import { ProviderService } from './services/providers.js';
 import { TrackingService } from './services/tracking.js';
@@ -39,6 +40,7 @@ export interface AppContext {
   devices: DeviceService;
   assessment: AssessmentService;
   providers: ProviderService;
+  goals: GoalService;
   audit: AuditService;
 }
 
@@ -85,6 +87,7 @@ export function buildContext(config: AppConfig, opts: BuildContextOptions = {}):
     devices: new DeviceService(repos.devices, repos.metrics, new MockAggregator()),
     assessment: new AssessmentService(repos.assessments, new MockMedicalEngine(), repos.profiles),
     providers: new ProviderService(new MockProviderDirectory()),
+    goals: new GoalService(repos.goals),
     audit: new AuditService(repos.audit),
   };
 }

@@ -13,3 +13,4 @@ export * from './care.js';
 export * from './devices.js';
 export * from './assessment.js';
 export * from './provider.js';
+export * from './goal.js';

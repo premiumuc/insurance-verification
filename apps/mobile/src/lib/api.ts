@@ -7,13 +7,16 @@ import type {
   CreateAssessmentResponse,
   CreateHealthEvent,
   CreateMedication,
+  CreateGoal,
   DailySummary,
   DeviceConnection,
+  Goal,
   MetricName,
   MetricSeries,
   Provider,
   ProviderType,
   SyncSamples,
+  UpdateGoal,
   GrantConsent,
   HealthEvent,
   HealthEventType,
@@ -175,4 +178,10 @@ export const api = {
     const qs = s.toString();
     return request<{ items: Provider[] }>(`/providers/search${qs ? `?${qs}` : ''}`);
   },
+
+  // --- Goals (M7) ---
+  listGoals: () => request<{ items: Goal[] }>('/goals'),
+  createGoal: (input: CreateGoal) => request<Goal>('/goals', { method: 'POST', body: input }),
+  updateGoal: (id: string, patch: UpdateGoal) =>
+    request<Goal>(`/goals/${id}`, { method: 'PATCH', body: patch }),
 };

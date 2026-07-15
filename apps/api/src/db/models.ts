@@ -141,6 +141,18 @@ export interface AssessmentRecord {
   createdAt: string;
 }
 
+export interface GoalRecord {
+  id: string;
+  userId: string;
+  type: string;
+  title: string;
+  target: number;
+  unit: string;
+  current: number;
+  status: 'active' | 'achieved' | 'archived';
+  createdAt: string;
+}
+
 export type AuditAction = 'read' | 'create' | 'update' | 'delete' | 'export' | 'share';
 
 export interface AuditRecord {

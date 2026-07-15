@@ -8,6 +8,7 @@ import { authPlugin } from './auth/plugin.js';
 import { registerCareRoutes } from './routes/care.js';
 import { registerDeviceRoutes } from './routes/devices.js';
 import { registerDiscoveryRoutes } from './routes/discovery.js';
+import { registerGoalRoutes } from './routes/goals.js';
 import type { AppConfig } from './config.js';
 import { buildContext, type BuildContextOptions } from './context.js';
 import { AppError } from './errors.js';
@@ -99,6 +100,7 @@ export async function buildApp(
   await app.register(registerCareRoutes, { prefix: '/v1' });
   await app.register(registerDeviceRoutes, { prefix: '/v1' });
   await app.register(registerDiscoveryRoutes, { prefix: '/v1' });
+  await app.register(registerGoalRoutes, { prefix: '/v1' });
 
   return app;
 }

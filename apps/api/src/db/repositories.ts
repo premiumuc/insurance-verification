@@ -6,6 +6,7 @@ import type {
   ConversationRecord,
   DeviceConnectionRecord,
   EventRecord,
+  GoalRecord,
   MedicationRecord,
   MessageRecord,
   MetricSampleRecord,
@@ -110,6 +111,13 @@ export interface AssessmentRepository {
   update(id: string, patch: Partial<AssessmentRecord>): Promise<AssessmentRecord>;
 }
 
+export interface GoalRepository {
+  create(record: GoalRecord): Promise<GoalRecord>;
+  findById(id: string): Promise<GoalRecord | null>;
+  listByUser(userId: string): Promise<GoalRecord[]>;
+  update(id: string, patch: Partial<GoalRecord>): Promise<GoalRecord>;
+}
+
 export interface AuditRepository {
   append(record: AuditRecord): Promise<void>;
   listBySubject(subjectUserId: string): Promise<AuditRecord[]>;
@@ -127,5 +135,6 @@ export interface Repositories {
   devices: DeviceRepository;
   metrics: MetricRepository;
   assessments: AssessmentRepository;
+  goals: GoalRepository;
   audit: AuditRepository;
 }

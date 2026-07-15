@@ -47,6 +47,7 @@ export default function AppTabsLayout() {
       <Tabs.Screen name="devices" options={{ href: null }} />
       <Tabs.Screen name="assessment" options={{ href: null }} />
       <Tabs.Screen name="providers" options={{ href: null }} />
+      <Tabs.Screen name="goals" options={{ href: null }} />
     </Tabs>
   );
 }
