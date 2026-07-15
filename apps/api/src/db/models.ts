@@ -73,6 +73,41 @@ export interface MessageRecord {
   createdAt: string;
 }
 
+export interface MedicationRecord {
+  id: string;
+  userId: string;
+  name: string;
+  dosage: string | null;
+  form: string | null;
+  isSupplement: boolean;
+  schedule: { times: string[]; frequency: 'daily' };
+  active: boolean;
+  conditionTag: string | null;
+  notes: string | null;
+  createdAt: string;
+}
+
+export interface ReminderRecord {
+  id: string;
+  userId: string;
+  medicationId: string;
+  scheduledAt: string;
+  status: 'pending' | 'taken' | 'skipped' | 'missed';
+  respondedAt: string | null;
+}
+
+export interface AppointmentRecord {
+  id: string;
+  userId: string;
+  title: string;
+  providerName: string | null;
+  startsAt: string;
+  location: string | null;
+  status: 'scheduled' | 'completed' | 'cancelled';
+  notes: string | null;
+  createdAt: string;
+}
+
 export type AuditAction = 'read' | 'create' | 'update' | 'delete' | 'export' | 'share';
 
 export interface AuditRecord {

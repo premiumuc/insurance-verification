@@ -1,19 +1,25 @@
 import type {
+  AppointmentRecord,
   AuditRecord,
   ConsentRecord,
   ConversationRecord,
   EventRecord,
+  MedicationRecord,
   MessageRecord,
   ProfileRecord,
+  ReminderRecord,
   UserRecord,
 } from './models.js';
 import type {
+  AppointmentRepository,
   AuditRepository,
   ConsentRepository,
   ConversationRepository,
   EventQuery,
   EventRepository,
+  MedicationRepository,
   ProfileRepository,
+  ReminderRepository,
   Repositories,
   UserRepository,
 } from './repositories.js';
@@ -161,6 +167,72 @@ class MemoryConversationRepository implements ConversationRepository {
   }
 }
 
+class MemoryMedicationRepository implements MedicationRepository {
+  private readonly byId = new Map<string, MedicationRecord>();
+  async create(record: MedicationRecord): Promise<MedicationRecord> {
+    this.byId.set(record.id, record);
+    return record;
+  }
+  async findById(id: string): Promise<MedicationRecord | null> {
+    return this.byId.get(id) ?? null;
+  }
+  async listByUser(userId: string, activeOnly = false): Promise<MedicationRecord[]> {
+    return [...this.byId.values()].filter((m) => m.userId === userId && (!activeOnly || m.active));
+  }
+  async update(id: string, patch: Partial<MedicationRecord>): Promise<MedicationRecord> {
+    const existing = this.byId.get(id);
+    if (!existing) throw new Error('medication not found');
+    const next = { ...existing, ...patch };
+    this.byId.set(id, next);
+    return next;
+  }
+}
+
+class MemoryReminderRepository implements ReminderRepository {
+  private readonly byId = new Map<string, ReminderRecord>();
+  async createMany(records: ReminderRecord[]): Promise<void> {
+    for (const r of records) this.byId.set(r.id, r);
+  }
+  async findById(id: string): Promise<ReminderRecord | null> {
+    return this.byId.get(id) ?? null;
+  }
+  async listByUser(userId: string, from: string, to: string): Promise<ReminderRecord[]> {
+    return [...this.byId.values()]
+      .filter((r) => r.userId === userId && r.scheduledAt >= from && r.scheduledAt < to)
+      .sort((a, b) => (a.scheduledAt < b.scheduledAt ? -1 : 1));
+  }
+  async update(id: string, patch: Partial<ReminderRecord>): Promise<ReminderRecord> {
+    const existing = this.byId.get(id);
+    if (!existing) throw new Error('reminder not found');
+    const next = { ...existing, ...patch };
+    this.byId.set(id, next);
+    return next;
+  }
+}
+
+class MemoryAppointmentRepository implements AppointmentRepository {
+  private readonly byId = new Map<string, AppointmentRecord>();
+  async create(record: AppointmentRecord): Promise<AppointmentRecord> {
+    this.byId.set(record.id, record);
+    return record;
+  }
+  async findById(id: string): Promise<AppointmentRecord | null> {
+    return this.byId.get(id) ?? null;
+  }
+  async listByUser(userId: string): Promise<AppointmentRecord[]> {
+    return [...this.byId.values()]
+      .filter((a) => a.userId === userId)
+      .sort((a, b) => (a.startsAt < b.startsAt ? -1 : 1));
+  }
+  async update(id: string, patch: Partial<AppointmentRecord>): Promise<AppointmentRecord> {
+    const existing = this.byId.get(id);
+    if (!existing) throw new Error('appointment not found');
+    const next = { ...existing, ...patch };
+    this.byId.set(id, next);
+    return next;
+  }
+}
+
 class MemoryAuditRepository implements AuditRepository {
   private readonly records: AuditRecord[] = [];
   async append(record: AuditRecord): Promise<void> {
@@ -178,6 +250,9 @@ export function createMemoryRepositories(): Repositories {
     consents: new MemoryConsentRepository(),
     events: new MemoryEventRepository(),
     conversations: new MemoryConversationRepository(),
+    medications: new MemoryMedicationRepository(),
+    reminders: new MemoryReminderRepository(),
+    appointments: new MemoryAppointmentRepository(),
     audit: new MemoryAuditRepository(),
   };
 }

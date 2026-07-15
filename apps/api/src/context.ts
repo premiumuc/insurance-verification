@@ -8,6 +8,7 @@ import { BedrockChatEngine } from './ai/bedrock-engine.js';
 import type { ChatEngine } from './ai/engine.js';
 import { LocalChatEngine } from './ai/local-engine.js';
 import { AuditService } from './services/audit.js';
+import { CareService } from './services/care.js';
 import { ConsentService } from './services/consent.js';
 import { ConversationService } from './services/conversation.js';
 import { IdentityService } from './services/identity.js';
@@ -28,6 +29,7 @@ export interface AppContext {
   consent: ConsentService;
   tracking: TrackingService;
   conversation: ConversationService;
+  care: CareService;
   audit: AuditService;
 }
 
@@ -70,6 +72,7 @@ export function buildContext(config: AppConfig, opts: BuildContextOptions = {}):
     consent: new ConsentService(repos),
     tracking,
     conversation: new ConversationService(repos.conversations, chatEngine, tracking, repos.profiles),
+    care: new CareService(repos.medications, repos.reminders, repos.appointments, repos.events),
     audit: new AuditService(repos.audit),
   };
 }

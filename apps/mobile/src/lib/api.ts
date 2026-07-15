@@ -1,11 +1,16 @@
 import Constants from 'expo-constants';
 import type {
+  Appointment,
   Consent,
+  CreateAppointment,
   CreateHealthEvent,
+  CreateMedication,
   DailySummary,
   GrantConsent,
   HealthEvent,
   HealthEventType,
+  Medication,
+  MedReminder,
   MeResponse,
   Message,
   PatternsResponse,
@@ -128,4 +133,15 @@ export const api = {
       method: 'POST',
       body: { content },
     }),
+
+  // --- Care (M4) ---
+  listMedications: () => request<Medication[]>('/medications'),
+  createMedication: (input: CreateMedication) =>
+    request<Medication>('/medications', { method: 'POST', body: input }),
+  todayReminders: () => request<MedReminder[]>('/medications/reminders'),
+  respondReminder: (id: string, status: 'taken' | 'skipped') =>
+    request<MedReminder>(`/medications/reminders/${id}/respond`, { method: 'POST', body: { status } }),
+  listAppointments: () => request<Appointment[]>('/appointments'),
+  createAppointment: (input: CreateAppointment) =>
+    request<Appointment>('/appointments', { method: 'POST', body: input }),
 };

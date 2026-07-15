@@ -5,6 +5,7 @@ import Fastify, { type FastifyInstance } from 'fastify';
 import { ZodError } from 'zod';
 import type { ApiError } from '@healthy-companion/types';
 import { authPlugin } from './auth/plugin.js';
+import { registerCareRoutes } from './routes/care.js';
 import type { AppConfig } from './config.js';
 import { buildContext, type BuildContextOptions } from './context.js';
 import { AppError } from './errors.js';
@@ -93,6 +94,7 @@ export async function buildApp(
   await app.register(registerConsentRoutes, { prefix: '/v1' });
   await app.register(registerTrackingRoutes, { prefix: '/v1' });
   await app.register(registerConversationRoutes, { prefix: '/v1' });
+  await app.register(registerCareRoutes, { prefix: '/v1' });
 
   return app;
 }

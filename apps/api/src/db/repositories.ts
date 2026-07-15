@@ -1,10 +1,13 @@
 import type {
+  AppointmentRecord,
   AuditRecord,
   ConsentRecord,
   ConversationRecord,
   EventRecord,
+  MedicationRecord,
   MessageRecord,
   ProfileRecord,
+  ReminderRecord,
   UserRecord,
 } from './models.js';
 
@@ -63,6 +66,27 @@ export interface ConversationRepository {
   listMessages(conversationId: string): Promise<MessageRecord[]>;
 }
 
+export interface MedicationRepository {
+  create(record: MedicationRecord): Promise<MedicationRecord>;
+  findById(id: string): Promise<MedicationRecord | null>;
+  listByUser(userId: string, activeOnly?: boolean): Promise<MedicationRecord[]>;
+  update(id: string, patch: Partial<MedicationRecord>): Promise<MedicationRecord>;
+}
+
+export interface ReminderRepository {
+  createMany(records: ReminderRecord[]): Promise<void>;
+  findById(id: string): Promise<ReminderRecord | null>;
+  listByUser(userId: string, from: string, to: string): Promise<ReminderRecord[]>;
+  update(id: string, patch: Partial<ReminderRecord>): Promise<ReminderRecord>;
+}
+
+export interface AppointmentRepository {
+  create(record: AppointmentRecord): Promise<AppointmentRecord>;
+  findById(id: string): Promise<AppointmentRecord | null>;
+  listByUser(userId: string): Promise<AppointmentRecord[]>;
+  update(id: string, patch: Partial<AppointmentRecord>): Promise<AppointmentRecord>;
+}
+
 export interface AuditRepository {
   append(record: AuditRecord): Promise<void>;
   listBySubject(subjectUserId: string): Promise<AuditRecord[]>;
@@ -74,5 +98,8 @@ export interface Repositories {
   consents: ConsentRepository;
   events: EventRepository;
   conversations: ConversationRepository;
+  medications: MedicationRepository;
+  reminders: ReminderRepository;
+  appointments: AppointmentRepository;
   audit: AuditRepository;
 }

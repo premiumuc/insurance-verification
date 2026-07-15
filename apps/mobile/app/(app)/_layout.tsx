@@ -35,13 +35,15 @@ export default function AppTabsLayout() {
         options={{ title: 'Dashboard', tabBarIcon: ({ color }) => <TabIcon icon="📊" color={color} /> }}
       />
       <Tabs.Screen
-        name="log"
-        options={{ title: 'Log', tabBarIcon: ({ color }) => <TabIcon icon="➕" color={color} /> }}
+        name="care"
+        options={{ title: 'Care', tabBarIcon: ({ color }) => <TabIcon icon="💊" color={color} /> }}
       />
       <Tabs.Screen
         name="profile"
         options={{ title: 'Profile', tabBarIcon: ({ color }) => <TabIcon icon="👤" color={color} /> }}
       />
+      {/* Reachable from the dashboard, not a top-level tab. */}
+      <Tabs.Screen name="log" options={{ href: null }} />
     </Tabs>
   );
 }

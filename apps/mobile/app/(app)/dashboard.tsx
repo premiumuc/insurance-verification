@@ -1,5 +1,6 @@
+import { router } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
-import { Body, FullScreenLoader, Screen, Title } from '@/components/ui';
+import { Body, Button, FullScreenLoader, Screen, Title } from '@/components/ui';
 import { useDailySummary, usePatterns, useRecentEvents } from '@/features/tracking/hooks';
 import { useTheme } from '@/providers/theme';
 import { radius, spacing } from '@/theme/tokens';
@@ -25,6 +26,7 @@ export default function Dashboard() {
     <Screen>
       <Title>Your day</Title>
       <Body>A snapshot of what you've logged today.</Body>
+      <Button title="＋ Quick log" variant="secondary" onPress={() => router.push('/log')} />
 
       <View style={styles.grid}>
         {stats.map((st) => (
