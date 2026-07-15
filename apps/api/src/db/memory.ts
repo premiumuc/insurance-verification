@@ -3,9 +3,11 @@ import type {
   AuditRecord,
   ConsentRecord,
   ConversationRecord,
+  DeviceConnectionRecord,
   EventRecord,
   MedicationRecord,
   MessageRecord,
+  MetricSampleRecord,
   ProfileRecord,
   ReminderRecord,
   UserRecord,
@@ -15,9 +17,11 @@ import type {
   AuditRepository,
   ConsentRepository,
   ConversationRepository,
+  DeviceRepository,
   EventQuery,
   EventRepository,
   MedicationRepository,
+  MetricRepository,
   ProfileRepository,
   ReminderRepository,
   Repositories,
@@ -233,6 +237,44 @@ class MemoryAppointmentRepository implements AppointmentRepository {
   }
 }
 
+class MemoryDeviceRepository implements DeviceRepository {
+  private readonly byId = new Map<string, DeviceConnectionRecord>();
+  async create(record: DeviceConnectionRecord): Promise<DeviceConnectionRecord> {
+    this.byId.set(record.id, record);
+    return record;
+  }
+  async findById(id: string): Promise<DeviceConnectionRecord | null> {
+    return this.byId.get(id) ?? null;
+  }
+  async findByVendor(userId: string, vendor: string): Promise<DeviceConnectionRecord | null> {
+    for (const d of this.byId.values()) if (d.userId === userId && d.vendor === vendor) return d;
+    return null;
+  }
+  async listByUser(userId: string): Promise<DeviceConnectionRecord[]> {
+    return [...this.byId.values()].filter((d) => d.userId === userId);
+  }
+  async update(id: string, patch: Partial<DeviceConnectionRecord>): Promise<DeviceConnectionRecord> {
+    const existing = this.byId.get(id);
+    if (!existing) throw new Error('device not found');
+    const next = { ...existing, ...patch };
+    this.byId.set(id, next);
+    return next;
+  }
+}
+
+class MemoryMetricRepository implements MetricRepository {
+  private readonly samples: MetricSampleRecord[] = [];
+  async insertMany(records: MetricSampleRecord[]): Promise<number> {
+    this.samples.push(...records);
+    return records.length;
+  }
+  async query(userId: string, metric: string, from: string, to: string): Promise<MetricSampleRecord[]> {
+    return this.samples
+      .filter((s) => s.userId === userId && s.metric === metric && s.ts >= from && s.ts < to)
+      .sort((a, b) => (a.ts < b.ts ? -1 : 1));
+  }
+}
+
 class MemoryAuditRepository implements AuditRepository {
   private readonly records: AuditRecord[] = [];
   async append(record: AuditRecord): Promise<void> {
@@ -253,6 +295,8 @@ export function createMemoryRepositories(): Repositories {
     medications: new MemoryMedicationRepository(),
     reminders: new MemoryReminderRepository(),
     appointments: new MemoryAppointmentRepository(),
+    devices: new MemoryDeviceRepository(),
+    metrics: new MemoryMetricRepository(),
     audit: new MemoryAuditRepository(),
   };
 }

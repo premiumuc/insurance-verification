@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 import { Body, Button, Screen, Title } from '@/components/ui';
 import { useAuth } from '@/providers/auth';
@@ -30,6 +31,7 @@ export default function Profile() {
         )}
       </View>
 
+      <Button title="Connected devices" variant="secondary" onPress={() => router.push('/devices')} />
       <Button title="Sign out" variant="secondary" onPress={() => void signOut()} />
     </Screen>
   );

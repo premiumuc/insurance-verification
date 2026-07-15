@@ -1,11 +1,16 @@
 import Constants from 'expo-constants';
 import type {
   Appointment,
+  ConnectDevice,
   Consent,
   CreateAppointment,
   CreateHealthEvent,
   CreateMedication,
   DailySummary,
+  DeviceConnection,
+  MetricName,
+  MetricSeries,
+  SyncSamples,
   GrantConsent,
   HealthEvent,
   HealthEventType,
@@ -144,4 +149,16 @@ export const api = {
   listAppointments: () => request<Appointment[]>('/appointments'),
   createAppointment: (input: CreateAppointment) =>
     request<Appointment>('/appointments', { method: 'POST', body: input }),
+
+  // --- Devices (M5) ---
+  listDevices: () => request<DeviceConnection[]>('/devices'),
+  connectDevice: (input: ConnectDevice) =>
+    request<{ device: DeviceConnection; authUrl: string | null }>('/devices/connect', {
+      method: 'POST',
+      body: input,
+    }),
+  syncSamples: (input: SyncSamples) =>
+    request<{ ingested: number }>('/devices/sync', { method: 'POST', body: input }),
+  metricSeries: (metric: MetricName, agg: 'raw' | 'daily' = 'daily') =>
+    request<MetricSeries>(`/metrics?metric=${metric}&agg=${agg}`),
 };

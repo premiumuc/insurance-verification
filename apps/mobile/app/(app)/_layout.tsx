@@ -42,8 +42,9 @@ export default function AppTabsLayout() {
         name="profile"
         options={{ title: 'Profile', tabBarIcon: ({ color }) => <TabIcon icon="👤" color={color} /> }}
       />
-      {/* Reachable from the dashboard, not a top-level tab. */}
+      {/* Reachable from other screens, not top-level tabs. */}
       <Tabs.Screen name="log" options={{ href: null }} />
+      <Tabs.Screen name="devices" options={{ href: null }} />
     </Tabs>
   );
 }

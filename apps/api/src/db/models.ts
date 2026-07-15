@@ -108,6 +108,28 @@ export interface AppointmentRecord {
   createdAt: string;
 }
 
+export interface DeviceConnectionRecord {
+  id: string;
+  userId: string;
+  vendor: string;
+  externalAccountId: string | null;
+  accessToken: string | null; // 🔐
+  refreshToken: string | null; // 🔐
+  status: 'connected' | 'disconnected' | 'error';
+  lastSyncedAt: string | null;
+  createdAt: string;
+}
+
+export interface MetricSampleRecord {
+  userId: string;
+  deviceConnectionId: string | null;
+  metric: string;
+  value: number;
+  unit: string;
+  ts: string;
+  source: string;
+}
+
 export type AuditAction = 'read' | 'create' | 'update' | 'delete' | 'export' | 'share';
 
 export interface AuditRecord {

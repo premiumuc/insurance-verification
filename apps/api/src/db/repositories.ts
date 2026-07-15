@@ -3,9 +3,11 @@ import type {
   AuditRecord,
   ConsentRecord,
   ConversationRecord,
+  DeviceConnectionRecord,
   EventRecord,
   MedicationRecord,
   MessageRecord,
+  MetricSampleRecord,
   ProfileRecord,
   ReminderRecord,
   UserRecord,
@@ -87,6 +89,19 @@ export interface AppointmentRepository {
   update(id: string, patch: Partial<AppointmentRecord>): Promise<AppointmentRecord>;
 }
 
+export interface DeviceRepository {
+  create(record: DeviceConnectionRecord): Promise<DeviceConnectionRecord>;
+  findById(id: string): Promise<DeviceConnectionRecord | null>;
+  findByVendor(userId: string, vendor: string): Promise<DeviceConnectionRecord | null>;
+  listByUser(userId: string): Promise<DeviceConnectionRecord[]>;
+  update(id: string, patch: Partial<DeviceConnectionRecord>): Promise<DeviceConnectionRecord>;
+}
+
+export interface MetricRepository {
+  insertMany(records: MetricSampleRecord[]): Promise<number>;
+  query(userId: string, metric: string, from: string, to: string): Promise<MetricSampleRecord[]>;
+}
+
 export interface AuditRepository {
   append(record: AuditRecord): Promise<void>;
   listBySubject(subjectUserId: string): Promise<AuditRecord[]>;
@@ -101,5 +116,7 @@ export interface Repositories {
   medications: MedicationRepository;
   reminders: ReminderRepository;
   appointments: AppointmentRepository;
+  devices: DeviceRepository;
+  metrics: MetricRepository;
   audit: AuditRepository;
 }
