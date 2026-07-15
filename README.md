@@ -4,9 +4,19 @@
 > platform that becomes the connective tissue between every dimension of a person's
 > health — wearables, medications, symptoms, providers, nutrition, and more.
 
-**Status:** Planning / Pre-implementation. This repository currently contains the
-**architecture and delivery plan only** (see [`/docs`](./docs)). No application code
-has been written yet — it is awaiting sign-off on the plan.
+**Status:** Milestone **M0 complete** — the plan is approved and the Generation-1
+scaffold is in place (Turborepo monorepo, tested safety-gate engine, Fastify API,
+Expo app skeleton, infra + CI). Next up: **M1 — Identity, onboarding, consent**. See
+[`docs/09-roadmap-and-plan.md`](./docs/09-roadmap-and-plan.md) for the full sequence.
+
+### Quick start
+
+```bash
+pnpm install
+pnpm typecheck && pnpm lint && pnpm test   # all green
+pnpm --filter @healthy-companion/api dev   # API → http://localhost:3000/v1/health
+pnpm --filter @healthy-companion/mobile dev  # Expo (iOS/Android/web)
+```
 
 > ⚠️ **Repository naming note.** This repo is named `insurance-verification`, but the
 > product defined in the concept document is **Healthy Companion**, a broad health
