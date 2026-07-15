@@ -11,6 +11,7 @@ import { AppError } from './errors.js';
 import { createLoggerOptions } from './logger.js';
 import { registerAuthRoutes } from './routes/auth.js';
 import { registerConsentRoutes } from './routes/consents.js';
+import { registerConversationRoutes } from './routes/conversations.js';
 import { registerHealthRoutes } from './routes/health.js';
 import { registerMeRoutes } from './routes/me.js';
 import { registerSafetyRoutes } from './routes/safety.js';
@@ -91,6 +92,7 @@ export async function buildApp(
   await app.register(registerMeRoutes, { prefix: '/v1' });
   await app.register(registerConsentRoutes, { prefix: '/v1' });
   await app.register(registerTrackingRoutes, { prefix: '/v1' });
+  await app.register(registerConversationRoutes, { prefix: '/v1' });
 
   return app;
 }

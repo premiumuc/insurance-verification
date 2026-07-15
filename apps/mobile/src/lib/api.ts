@@ -7,7 +7,9 @@ import type {
   HealthEvent,
   HealthEventType,
   MeResponse,
+  Message,
   PatternsResponse,
+  PostMessageResponse,
   Profile,
   RegisterRequest,
   SessionResponse,
@@ -110,4 +112,20 @@ export const api = {
     request<DailySummary>(`/summary/daily${date ? `?date=${date}` : ''}`),
 
   patterns: (windowDays = 14) => request<PatternsResponse>(`/patterns?window=${windowDays}`),
+
+  // --- Conversation (M3) ---
+  createConversation: () =>
+    request<{ id: string; title: string; createdAt: string }>('/conversations', {
+      method: 'POST',
+      body: {},
+    }),
+
+  listMessages: (conversationId: string) =>
+    request<{ items: Message[] }>(`/conversations/${conversationId}/messages`),
+
+  postMessage: (conversationId: string, content: string) =>
+    request<PostMessageResponse>(`/conversations/${conversationId}/messages`, {
+      method: 'POST',
+      body: { content },
+    }),
 };

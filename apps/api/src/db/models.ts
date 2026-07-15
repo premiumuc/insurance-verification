@@ -53,6 +53,26 @@ export interface EventRecord {
   createdAt: string;
 }
 
+export interface ConversationRecord {
+  id: string;
+  userId: string;
+  title: string;
+  lastMessageAt: string;
+  createdAt: string;
+}
+
+export interface MessageRecord {
+  id: string;
+  conversationId: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string; // 🔐
+  intent: 'log' | 'ask' | 'both' | 'emergency' | null;
+  eventIds: string[];
+  safetyFlag: string | null;
+  model: string | null;
+  createdAt: string;
+}
+
 export type AuditAction = 'read' | 'create' | 'update' | 'delete' | 'export' | 'share';
 
 export interface AuditRecord {

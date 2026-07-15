@@ -29,6 +29,11 @@ const EnvSchema = z.object({
   AWS_REGION: z.string().optional(),
   COGNITO_USER_POOL_ID: z.string().optional(),
   COGNITO_CLIENT_ID: z.string().optional(),
+
+  // --- AI (conversational engine) ---
+  // 'local' is a deterministic heuristic engine (dev/test). 'bedrock' uses Claude.
+  CHAT_ENGINE: z.enum(['local', 'bedrock']).default('local'),
+  BEDROCK_MODEL_ID: z.string().default('anthropic.claude-sonnet-4-5-20250929-v1:0'),
 })
   .refine(
     (env) =>
@@ -43,7 +48,11 @@ const EnvSchema = z.object({
       message: 'AUTH_MODE=cognito requires AWS_REGION, COGNITO_USER_POOL_ID, COGNITO_CLIENT_ID',
       path: ['AUTH_MODE'],
     },
-  );
+  )
+  .refine((env) => env.CHAT_ENGINE !== 'bedrock' || Boolean(env.AWS_REGION), {
+    message: 'CHAT_ENGINE=bedrock requires AWS_REGION',
+    path: ['CHAT_ENGINE'],
+  });
 
 export type AppConfig = z.infer<typeof EnvSchema>;
 

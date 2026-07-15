@@ -1,13 +1,16 @@
 import type {
   AuditRecord,
   ConsentRecord,
+  ConversationRecord,
   EventRecord,
+  MessageRecord,
   ProfileRecord,
   UserRecord,
 } from './models.js';
 import type {
   AuditRepository,
   ConsentRepository,
+  ConversationRepository,
   EventQuery,
   EventRepository,
   ProfileRepository,
@@ -126,6 +129,38 @@ class MemoryEventRepository implements EventRepository {
   }
 }
 
+class MemoryConversationRepository implements ConversationRepository {
+  private readonly convos = new Map<string, ConversationRecord>();
+  private readonly messages = new Map<string, MessageRecord[]>();
+
+  async create(record: ConversationRecord): Promise<ConversationRecord> {
+    this.convos.set(record.id, record);
+    this.messages.set(record.id, []);
+    return record;
+  }
+  async findById(id: string): Promise<ConversationRecord | null> {
+    return this.convos.get(id) ?? null;
+  }
+  async listByUser(userId: string): Promise<ConversationRecord[]> {
+    return [...this.convos.values()]
+      .filter((c) => c.userId === userId)
+      .sort((a, b) => (a.lastMessageAt < b.lastMessageAt ? 1 : -1));
+  }
+  async touch(id: string, at: string): Promise<void> {
+    const c = this.convos.get(id);
+    if (c) this.convos.set(id, { ...c, lastMessageAt: at });
+  }
+  async addMessage(record: MessageRecord): Promise<MessageRecord> {
+    const list = this.messages.get(record.conversationId) ?? [];
+    list.push(record);
+    this.messages.set(record.conversationId, list);
+    return record;
+  }
+  async listMessages(conversationId: string): Promise<MessageRecord[]> {
+    return [...(this.messages.get(conversationId) ?? [])];
+  }
+}
+
 class MemoryAuditRepository implements AuditRepository {
   private readonly records: AuditRecord[] = [];
   async append(record: AuditRecord): Promise<void> {
@@ -142,6 +177,7 @@ export function createMemoryRepositories(): Repositories {
     profiles: new MemoryProfileRepository(),
     consents: new MemoryConsentRepository(),
     events: new MemoryEventRepository(),
+    conversations: new MemoryConversationRepository(),
     audit: new MemoryAuditRepository(),
   };
 }

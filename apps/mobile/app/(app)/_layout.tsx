@@ -27,6 +27,10 @@ export default function AppTabsLayout() {
         options={{ title: 'Today', tabBarIcon: ({ color }) => <TabIcon icon="🏠" color={color} /> }}
       />
       <Tabs.Screen
+        name="chat"
+        options={{ title: 'Chat', tabBarIcon: ({ color }) => <TabIcon icon="💬" color={color} /> }}
+      />
+      <Tabs.Screen
         name="dashboard"
         options={{ title: 'Dashboard', tabBarIcon: ({ color }) => <TabIcon icon="📊" color={color} /> }}
       />

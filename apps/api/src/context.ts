@@ -4,8 +4,12 @@ import { LocalTokenService } from './auth/local.js';
 import type { TokenIssuer, TokenVerifier } from './auth/types.js';
 import { createMemoryRepositories } from './db/memory.js';
 import type { Repositories } from './db/repositories.js';
+import { BedrockChatEngine } from './ai/bedrock-engine.js';
+import type { ChatEngine } from './ai/engine.js';
+import { LocalChatEngine } from './ai/local-engine.js';
 import { AuditService } from './services/audit.js';
 import { ConsentService } from './services/consent.js';
+import { ConversationService } from './services/conversation.js';
 import { IdentityService } from './services/identity.js';
 import { TrackingService } from './services/tracking.js';
 
@@ -23,6 +27,7 @@ export interface AppContext {
   identity: IdentityService;
   consent: ConsentService;
   tracking: TrackingService;
+  conversation: ConversationService;
   audit: AuditService;
 }
 
@@ -49,6 +54,13 @@ export function buildContext(config: AppConfig, opts: BuildContextOptions = {}):
     issuer = local;
   }
 
+  const chatEngine: ChatEngine =
+    config.CHAT_ENGINE === 'bedrock'
+      ? new BedrockChatEngine({ region: config.AWS_REGION!, modelId: config.BEDROCK_MODEL_ID })
+      : new LocalChatEngine();
+
+  const tracking = new TrackingService(repos.events);
+
   return {
     config,
     repos,
@@ -56,7 +68,8 @@ export function buildContext(config: AppConfig, opts: BuildContextOptions = {}):
     issuer,
     identity: new IdentityService(repos),
     consent: new ConsentService(repos),
-    tracking: new TrackingService(repos.events),
+    tracking,
+    conversation: new ConversationService(repos.conversations, chatEngine, tracking, repos.profiles),
     audit: new AuditService(repos.audit),
   };
 }

@@ -1,7 +1,9 @@
 import type {
   AuditRecord,
   ConsentRecord,
+  ConversationRecord,
   EventRecord,
+  MessageRecord,
   ProfileRecord,
   UserRecord,
 } from './models.js';
@@ -52,6 +54,15 @@ export interface EventRepository {
   listInRange(userId: string, from: string, to: string): Promise<EventRecord[]>;
 }
 
+export interface ConversationRepository {
+  create(record: ConversationRecord): Promise<ConversationRecord>;
+  findById(id: string): Promise<ConversationRecord | null>;
+  listByUser(userId: string): Promise<ConversationRecord[]>;
+  touch(id: string, at: string): Promise<void>;
+  addMessage(record: MessageRecord): Promise<MessageRecord>;
+  listMessages(conversationId: string): Promise<MessageRecord[]>;
+}
+
 export interface AuditRepository {
   append(record: AuditRecord): Promise<void>;
   listBySubject(subjectUserId: string): Promise<AuditRecord[]>;
@@ -62,5 +73,6 @@ export interface Repositories {
   profiles: ProfileRepository;
   consents: ConsentRepository;
   events: EventRepository;
+  conversations: ConversationRepository;
   audit: AuditRepository;
 }
