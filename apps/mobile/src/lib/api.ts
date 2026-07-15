@@ -1,0 +1,187 @@
+import Constants from 'expo-constants';
+import type {
+  Appointment,
+  ConnectDevice,
+  Consent,
+  CreateAppointment,
+  CreateAssessmentResponse,
+  CreateHealthEvent,
+  CreateMedication,
+  CreateGoal,
+  DailySummary,
+  DeviceConnection,
+  Goal,
+  MetricName,
+  MetricSeries,
+  Provider,
+  ProviderType,
+  SyncSamples,
+  UpdateGoal,
+  GrantConsent,
+  HealthEvent,
+  HealthEventType,
+  Medication,
+  MedReminder,
+  MeResponse,
+  Message,
+  PatternsResponse,
+  PostMessageResponse,
+  Profile,
+  RegisterRequest,
+  SessionResponse,
+  UpdateProfile,
+} from '@healthy-companion/types';
+import { getToken } from './secure-store';
+
+const BASE_URL = (Constants.expoConfig?.extra?.apiBaseUrl as string) ?? 'http://localhost:3000/v1';
+
+export interface ApiErrorShape {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
+export class ApiError extends Error {
+  readonly code: string;
+  readonly status: number;
+  constructor(status: number, body: ApiErrorShape) {
+    super(body.message);
+    this.name = 'ApiError';
+    this.code = body.code;
+    this.status = status;
+  }
+}
+
+interface RequestOptions {
+  method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
+  body?: unknown;
+  /** Attach the stored bearer token. Defaults to true. */
+  auth?: boolean;
+}
+
+async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
+  const { method = 'GET', body, auth = true } = opts;
+  const headers: Record<string, string> = { 'content-type': 'application/json' };
+
+  if (auth) {
+    const token = await getToken();
+    if (token) headers.authorization = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method,
+    headers,
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+
+  if (res.status === 204) return undefined as T;
+
+  const json = (await res.json().catch(() => null)) as unknown;
+  if (!res.ok) {
+    const err = (json as { error?: ApiErrorShape } | null)?.error ?? {
+      code: 'internal',
+      message: 'Request failed',
+    };
+    throw new ApiError(res.status, err);
+  }
+  return json as T;
+}
+
+/** Typed API surface used by the app. Mirrors docs/04. */
+export const api = {
+  register: (input: RegisterRequest) =>
+    request<{ me: MeResponse; session: SessionResponse | null }>('/auth/register', {
+      method: 'POST',
+      body: input,
+      auth: false,
+    }),
+
+  // Dev/local session. Production obtains tokens from Cognito.
+  session: (email: string) =>
+    request<SessionResponse>('/auth/session', { method: 'POST', body: { email }, auth: false }),
+
+  me: () => request<MeResponse>('/me'),
+
+  updateProfile: (patch: UpdateProfile) =>
+    request<Profile>('/me/profile', { method: 'PATCH', body: patch }),
+
+  listConsents: () => request<Consent[]>('/consents'),
+
+  grantConsent: (input: GrantConsent) =>
+    request<Consent>('/consents', { method: 'POST', body: input }),
+
+  // --- Tracking (M2) ---
+  createEvent: (input: CreateHealthEvent) =>
+    request<HealthEvent>('/events', { method: 'POST', body: input }),
+
+  listEvents: (params: { type?: HealthEventType; limit?: number } = {}) => {
+    const q = new URLSearchParams();
+    if (params.type) q.set('type', params.type);
+    if (params.limit) q.set('limit', String(params.limit));
+    const qs = q.toString();
+    return request<{ items: HealthEvent[]; nextCursor: string | null }>(
+      `/events${qs ? `?${qs}` : ''}`,
+    );
+  },
+
+  dailySummary: (date?: string) =>
+    request<DailySummary>(`/summary/daily${date ? `?date=${date}` : ''}`),
+
+  patterns: (windowDays = 14) => request<PatternsResponse>(`/patterns?window=${windowDays}`),
+
+  // --- Conversation (M3) ---
+  createConversation: () =>
+    request<{ id: string; title: string; createdAt: string }>('/conversations', {
+      method: 'POST',
+      body: {},
+    }),
+
+  listMessages: (conversationId: string) =>
+    request<{ items: Message[] }>(`/conversations/${conversationId}/messages`),
+
+  postMessage: (conversationId: string, content: string) =>
+    request<PostMessageResponse>(`/conversations/${conversationId}/messages`, {
+      method: 'POST',
+      body: { content },
+    }),
+
+  // --- Care (M4) ---
+  listMedications: () => request<Medication[]>('/medications'),
+  createMedication: (input: CreateMedication) =>
+    request<Medication>('/medications', { method: 'POST', body: input }),
+  todayReminders: () => request<MedReminder[]>('/medications/reminders'),
+  respondReminder: (id: string, status: 'taken' | 'skipped') =>
+    request<MedReminder>(`/medications/reminders/${id}/respond`, { method: 'POST', body: { status } }),
+  listAppointments: () => request<Appointment[]>('/appointments'),
+  createAppointment: (input: CreateAppointment) =>
+    request<Appointment>('/appointments', { method: 'POST', body: input }),
+
+  // --- Devices (M5) ---
+  listDevices: () => request<DeviceConnection[]>('/devices'),
+  connectDevice: (input: ConnectDevice) =>
+    request<{ device: DeviceConnection; authUrl: string | null }>('/devices/connect', {
+      method: 'POST',
+      body: input,
+    }),
+  syncSamples: (input: SyncSamples) =>
+    request<{ ingested: number }>('/devices/sync', { method: 'POST', body: input }),
+  metricSeries: (metric: MetricName, agg: 'raw' | 'daily' = 'daily') =>
+    request<MetricSeries>(`/metrics?metric=${metric}&agg=${agg}`),
+
+  // --- Discovery (M6) ---
+  createAssessment: (symptoms: string[]) =>
+    request<CreateAssessmentResponse>('/assessments', { method: 'POST', body: { symptoms } }),
+  searchProviders: (params: { type?: ProviderType; q?: string } = {}) => {
+    const s = new URLSearchParams();
+    if (params.type) s.set('type', params.type);
+    if (params.q) s.set('q', params.q);
+    const qs = s.toString();
+    return request<{ items: Provider[] }>(`/providers/search${qs ? `?${qs}` : ''}`);
+  },
+
+  // --- Goals (M7) ---
+  listGoals: () => request<{ items: Goal[] }>('/goals'),
+  createGoal: (input: CreateGoal) => request<Goal>('/goals', { method: 'POST', body: input }),
+  updateGoal: (id: string, patch: UpdateGoal) =>
+    request<Goal>(`/goals/${id}`, { method: 'PATCH', body: patch }),
+};

@@ -1,0 +1,111 @@
+// Prisma schema — realized from docs/03 (Data Model).
+//
+// FORWARD ARTIFACT: this is the target Postgres schema. M1 runs against the in-memory
+// repositories; M2 wires the Prisma client + migrations against RDS Postgres and
+// implements the repository interfaces (src/db/repositories.ts) on top of these models.
+//
+// Fields marked "🔐" in docs/03 receive application-layer envelope encryption in the
+// repository implementation, on top of at-rest KMS encryption.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  user
+  provider
+  admin
+}
+
+enum UserStatus {
+  active
+  suspended
+  deleted
+}
+
+model Organization {
+  id        String   @id @default(uuid()) @db.Uuid
+  type      String // provider | employer
+  name      String
+  npi       String?
+  createdAt DateTime @default(now())
+  users     User[]
+
+  @@map("organizations")
+}
+
+model User {
+  id         String     @id @default(uuid()) @db.Uuid
+  cognitoSub String     @unique @map("cognito_sub")
+  role       Role       @default(user)
+  orgId      String?    @map("org_id") @db.Uuid
+  email      String     @unique // 🔐
+  status     UserStatus @default(active)
+  createdAt  DateTime   @default(now()) @map("created_at")
+  deletedAt  DateTime?  @map("deleted_at")
+
+  org      Organization? @relation(fields: [orgId], references: [id])
+  profile  Profile?
+  consents Consent[]
+
+  @@index([orgId])
+  @@map("users")
+}
+
+model Profile {
+  userId          String   @id @map("user_id") @db.Uuid
+  firstName       String?  @map("first_name") // 🔐
+  lastName        String?  @map("last_name") // 🔐
+  dateOfBirth     String?  @map("date_of_birth") // 🔐 (YYYY-MM-DD)
+  sexAtBirth      String?  @map("sex_at_birth")
+  genderIdentity  String?  @map("gender_identity")
+  heightCm        Float?   @map("height_cm")
+  bloodType       String?  @map("blood_type")
+  conditions      Json     @default("[]")
+  allergies       Json     @default("[]")
+  pregnancyStatus String?  @map("pregnancy_status")
+  locale          String   @default("en-US")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+model Consent {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  scope     String
+  granted   Boolean
+  version   String
+  grantedAt DateTime? @map("granted_at")
+  revokedAt DateTime? @map("revoked_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, scope])
+  @@index([userId])
+  @@map("consents")
+}
+
+// Append-only. No update/delete permitted (enforced at the DB grant level).
+model AuditLog {
+  id            String   @id @default(uuid()) @db.Uuid
+  actorUserId   String?  @map("actor_user_id") @db.Uuid
+  subjectUserId String?  @map("subject_user_id") @db.Uuid
+  action        String
+  resourceType  String   @map("resource_type")
+  resourceId    String?  @map("resource_id")
+  purpose       String
+  ip            String?
+  userAgent     String?  @map("user_agent")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@index([subjectUserId, createdAt])
+  @@map("audit_logs")
+}

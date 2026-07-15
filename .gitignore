@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# Expo / React Native
+.expo/
+.expo-shared/
+apps/mobile/ios/
+apps/mobile/android/
+*.orig.*
+web-build/
+
+# Turborepo
+.turbo/
+
+# Env & secrets (NEVER commit)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# Terraform
+infra/**/.terraform/
+infra/**/*.tfstate
+infra/**/*.tfstate.*
+infra/**/*.tfvars
+!infra/**/*.tfvars.example
+crash.log
+tfplan
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.log

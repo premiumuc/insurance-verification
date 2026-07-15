@@ -4,9 +4,39 @@
 > platform that becomes the connective tissue between every dimension of a person's
 > health — wearables, medications, symptoms, providers, nutrition, and more.
 
-**Status:** Planning / Pre-implementation. This repository currently contains the
-**architecture and delivery plan only** (see [`/docs`](./docs)). No application code
-has been written yet — it is awaiting sign-off on the plan.
+**Status:** **Generation 1 feature-complete** (milestones M0–M8). The full consumer app
+is built, runnable, and green (typecheck · lint · ~80 tests). Remaining work to ship is
+operational — real AWS/BAA provisioning, EAS builds, and store submission — tracked in
+[`store/LAUNCH.md`](./store/LAUNCH.md).
+
+| Milestone | What shipped |
+|-----------|--------------|
+| M0 | Turborepo scaffold, tested safety-gate engine, Fastify API, Expo app, infra + CI |
+| M1 | Identity/onboarding/consent, Cognito-or-dev auth, audit logging, biometric lock |
+| M2 | Health-event tracking + dashboard + non-clinical patterns |
+| M3 | Conversational front door, safety-gate-first, Claude-via-Bedrock engine |
+| M4 | Medications, reminders, appointments, visit-summary export |
+| M5 | Device connections + metric timeseries (HealthKit / Health Connect / aggregator) |
+| M6 | Contextualized self-diagnosis + provider discovery |
+| M7 | Daily Use Loop, goals, guidance surfacing |
+| M8 | EAS build/submit config, store collateral, security + launch runbook |
+
+Every external dependency (Postgres, Cognito, Bedrock/Claude, Infermedica, Terra,
+HealthKit/Health Connect) sits behind an adapter interface with a **working local/mock
+implementation** (so it runs and tests here) and a **production implementation** as
+committed code. See [`docs/09-roadmap-and-plan.md`](./docs/09-roadmap-and-plan.md).
+
+### Quick start
+
+```bash
+pnpm install
+pnpm typecheck && pnpm lint && pnpm test   # all green
+pnpm --filter @healthy-companion/api dev   # API → http://localhost:3000/v1/health
+pnpm --filter @healthy-companion/mobile dev  # Expo (iOS/Android/web)
+```
+
+The API runs fully offline in `AUTH_MODE=local` + `CHAT_ENGINE=local` (the defaults) —
+no AWS required for local development.
 
 > ⚠️ **Repository naming note.** This repo is named `insurance-verification`, but the
 > product defined in the concept document is **Healthy Companion**, a broad health
