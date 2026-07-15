@@ -11,3 +11,5 @@ export * from './auth.js';
 export * from './tracking.js';
 export * from './care.js';
 export * from './devices.js';
+export * from './assessment.js';
+export * from './provider.js';

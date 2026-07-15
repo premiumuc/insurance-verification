@@ -4,12 +4,15 @@ import type {
   ConnectDevice,
   Consent,
   CreateAppointment,
+  CreateAssessmentResponse,
   CreateHealthEvent,
   CreateMedication,
   DailySummary,
   DeviceConnection,
   MetricName,
   MetricSeries,
+  Provider,
+  ProviderType,
   SyncSamples,
   GrantConsent,
   HealthEvent,
@@ -161,4 +164,15 @@ export const api = {
     request<{ ingested: number }>('/devices/sync', { method: 'POST', body: input }),
   metricSeries: (metric: MetricName, agg: 'raw' | 'daily' = 'daily') =>
     request<MetricSeries>(`/metrics?metric=${metric}&agg=${agg}`),
+
+  // --- Discovery (M6) ---
+  createAssessment: (symptoms: string[]) =>
+    request<CreateAssessmentResponse>('/assessments', { method: 'POST', body: { symptoms } }),
+  searchProviders: (params: { type?: ProviderType; q?: string } = {}) => {
+    const s = new URLSearchParams();
+    if (params.type) s.set('type', params.type);
+    if (params.q) s.set('q', params.q);
+    const qs = s.toString();
+    return request<{ items: Provider[] }>(`/providers/search${qs ? `?${qs}` : ''}`);
+  },
 };

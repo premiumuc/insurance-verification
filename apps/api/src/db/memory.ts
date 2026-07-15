@@ -1,5 +1,6 @@
 import type {
   AppointmentRecord,
+  AssessmentRecord,
   AuditRecord,
   ConsentRecord,
   ConversationRecord,
@@ -14,6 +15,7 @@ import type {
 } from './models.js';
 import type {
   AppointmentRepository,
+  AssessmentRepository,
   AuditRepository,
   ConsentRepository,
   ConversationRepository,
@@ -275,6 +277,29 @@ class MemoryMetricRepository implements MetricRepository {
   }
 }
 
+class MemoryAssessmentRepository implements AssessmentRepository {
+  private readonly byId = new Map<string, AssessmentRecord>();
+  async create(record: AssessmentRecord): Promise<AssessmentRecord> {
+    this.byId.set(record.id, record);
+    return record;
+  }
+  async findById(id: string): Promise<AssessmentRecord | null> {
+    return this.byId.get(id) ?? null;
+  }
+  async listByUser(userId: string): Promise<AssessmentRecord[]> {
+    return [...this.byId.values()]
+      .filter((a) => a.userId === userId)
+      .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+  }
+  async update(id: string, patch: Partial<AssessmentRecord>): Promise<AssessmentRecord> {
+    const existing = this.byId.get(id);
+    if (!existing) throw new Error('assessment not found');
+    const next = { ...existing, ...patch };
+    this.byId.set(id, next);
+    return next;
+  }
+}
+
 class MemoryAuditRepository implements AuditRepository {
   private readonly records: AuditRecord[] = [];
   async append(record: AuditRecord): Promise<void> {
@@ -297,6 +322,7 @@ export function createMemoryRepositories(): Repositories {
     appointments: new MemoryAppointmentRepository(),
     devices: new MemoryDeviceRepository(),
     metrics: new MemoryMetricRepository(),
+    assessments: new MemoryAssessmentRepository(),
     audit: new MemoryAuditRepository(),
   };
 }

@@ -1,4 +1,4 @@
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { evaluate } from '@healthy-companion/safety-rules';
@@ -57,6 +57,8 @@ export default function Home() {
         ) : null}
       </View>
 
+      <Button title="Check symptoms" variant="secondary" onPress={() => router.push('/assessment')} />
+      <Button title="Find care nearby" variant="secondary" onPress={() => router.push('/providers')} />
       <Button title="Sign out" variant="secondary" onPress={() => void signOut()} />
     </Screen>
   );

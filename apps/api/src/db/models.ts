@@ -130,6 +130,17 @@ export interface MetricSampleRecord {
   source: string;
 }
 
+export interface AssessmentRecord {
+  id: string;
+  userId: string;
+  reportedSymptoms: string[]; // 🔐
+  contextSnapshot: Record<string, unknown>; // 🔐
+  engine: string;
+  result: Record<string, unknown>; // 🔐
+  shareable: boolean;
+  createdAt: string;
+}
+
 export type AuditAction = 'read' | 'create' | 'update' | 'delete' | 'export' | 'share';
 
 export interface AuditRecord {

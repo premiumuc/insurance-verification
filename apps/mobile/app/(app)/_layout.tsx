@@ -45,6 +45,8 @@ export default function AppTabsLayout() {
       {/* Reachable from other screens, not top-level tabs. */}
       <Tabs.Screen name="log" options={{ href: null }} />
       <Tabs.Screen name="devices" options={{ href: null }} />
+      <Tabs.Screen name="assessment" options={{ href: null }} />
+      <Tabs.Screen name="providers" options={{ href: null }} />
     </Tabs>
   );
 }

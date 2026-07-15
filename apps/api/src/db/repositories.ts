@@ -1,5 +1,6 @@
 import type {
   AppointmentRecord,
+  AssessmentRecord,
   AuditRecord,
   ConsentRecord,
   ConversationRecord,
@@ -102,6 +103,13 @@ export interface MetricRepository {
   query(userId: string, metric: string, from: string, to: string): Promise<MetricSampleRecord[]>;
 }
 
+export interface AssessmentRepository {
+  create(record: AssessmentRecord): Promise<AssessmentRecord>;
+  findById(id: string): Promise<AssessmentRecord | null>;
+  listByUser(userId: string): Promise<AssessmentRecord[]>;
+  update(id: string, patch: Partial<AssessmentRecord>): Promise<AssessmentRecord>;
+}
+
 export interface AuditRepository {
   append(record: AuditRecord): Promise<void>;
   listBySubject(subjectUserId: string): Promise<AuditRecord[]>;
@@ -118,5 +126,6 @@ export interface Repositories {
   appointments: AppointmentRepository;
   devices: DeviceRepository;
   metrics: MetricRepository;
+  assessments: AssessmentRepository;
   audit: AuditRepository;
 }

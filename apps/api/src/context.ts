@@ -7,13 +7,17 @@ import type { Repositories } from './db/repositories.js';
 import { BedrockChatEngine } from './ai/bedrock-engine.js';
 import type { ChatEngine } from './ai/engine.js';
 import { LocalChatEngine } from './ai/local-engine.js';
+import { MockMedicalEngine } from './integrations/medical-engine.js';
+import { MockProviderDirectory } from './integrations/provider-directory.js';
 import { MockAggregator } from './integrations/wearables.js';
+import { AssessmentService } from './services/assessment.js';
 import { AuditService } from './services/audit.js';
 import { CareService } from './services/care.js';
 import { ConsentService } from './services/consent.js';
 import { ConversationService } from './services/conversation.js';
 import { DeviceService } from './services/devices.js';
 import { IdentityService } from './services/identity.js';
+import { ProviderService } from './services/providers.js';
 import { TrackingService } from './services/tracking.js';
 
 /**
@@ -33,6 +37,8 @@ export interface AppContext {
   conversation: ConversationService;
   care: CareService;
   devices: DeviceService;
+  assessment: AssessmentService;
+  providers: ProviderService;
   audit: AuditService;
 }
 
@@ -77,6 +83,8 @@ export function buildContext(config: AppConfig, opts: BuildContextOptions = {}):
     conversation: new ConversationService(repos.conversations, chatEngine, tracking, repos.profiles),
     care: new CareService(repos.medications, repos.reminders, repos.appointments, repos.events),
     devices: new DeviceService(repos.devices, repos.metrics, new MockAggregator()),
+    assessment: new AssessmentService(repos.assessments, new MockMedicalEngine(), repos.profiles),
+    providers: new ProviderService(new MockProviderDirectory()),
     audit: new AuditService(repos.audit),
   };
 }
